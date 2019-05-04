@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
- public class destroyAfter : MonoBehaviour {
- 
-     float lifetime = 3.0f;
+public class destroyAfter : MonoBehaviour
+{
 
-	void Start () {
-		DestroyExplosion();
-	}
- 
-     public void DestroyExplosion ()
-     { Destroy (gameObject, lifetime); }
- }
+    float lifetime = 3.0f;
+
+    void Start()
+    {
+        DestroyExplosion();
+    }
+
+    public void DestroyExplosion()
+    { Destroy(gameObject, lifetime); }
+}

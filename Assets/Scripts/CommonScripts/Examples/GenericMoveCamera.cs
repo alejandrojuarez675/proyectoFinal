@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Assets.Elenesski.Camera.Utilities {
+namespace Assets.Elenesski.Camera.Utilities
+{
 
-    public class GenericMoveCamera : MonoBehaviour {
+    public class GenericMoveCamera : MonoBehaviour
+    {
 
         private Movement _Forward;
         private Movement _PanX;
@@ -22,7 +24,7 @@ namespace Assets.Elenesski.Camera.Utilities {
 
         [Header("Camera")]
         public bool LevelCamera = true;
-        [Range(0f,15f)]
+        [Range(0f, 15f)]
         public float LevelCameraAngleThreshold = 7.5f;
         public bool ForwardMovementLockEnabled = true;
 
@@ -71,35 +73,43 @@ namespace Assets.Elenesski.Camera.Utilities {
         // Rotation when in Awake(), to prevent weird rotations later
         private Vector3 _DefaultRotation;
 
-        private class Movement {
+        private class Movement
+        {
             private readonly Action<float> _Action;
             private readonly Func<float> _DampenRate;
             private float _Velocity;
             private float _Dampen;
 
-            public Movement(Action<float> aAction, Func<float> aDampenRate) {
+            public Movement(Action<float> aAction, Func<float> aDampenRate)
+            {
                 _Action = aAction;
                 _DampenRate = aDampenRate;
                 _Velocity = 0f;
                 _Dampen = 0;
             }
 
-            public void ChangeVelocity(float aAmount) {
+            public void ChangeVelocity(float aAmount)
+            {
                 _Velocity += aAmount;
                 _Dampen = _DampenRate();
             }
 
-            public void SetVelocity(float aAmount) {
+            public void SetVelocity(float aAmount)
+            {
                 _Velocity = aAmount;
                 _Dampen = _DampenRate();
             }
 
-            public void Update(bool aDampen = true) {
+            public void Update(bool aDampen = true)
+            {
                 if (_Dampen > 0)
-                    if (_Velocity >= -0.001f && _Velocity <= 0.001f) {
+                    if (_Velocity >= -0.001f && _Velocity <= 0.001f)
+                    {
                         _Dampen = 0;
                         _Velocity = 0;
-                    } else {
+                    }
+                    else
+                    {
                         if (aDampen)
                             _Velocity *= _Dampen;
 
@@ -108,12 +118,14 @@ namespace Assets.Elenesski.Camera.Utilities {
             }
         }
 
-        public void SetResolution(float aResolution) {
+        public void SetResolution(float aResolution)
+        {
             _Resolution = aResolution;
         }
 
-        public void Awake() {
-            if ( GetInputs == null )
+        public void Awake()
+        {
+            if (GetInputs == null)
                 GetInputs = new GenericMoveCameraInputs();
 
             _DefaultRotation = gameObject.transform.localRotation.eulerAngles;
@@ -121,22 +133,27 @@ namespace Assets.Elenesski.Camera.Utilities {
             GetInputs.Initialize();
         }
 
-        public void Start() {
-            if (LookAtTarget == null) {
-                _Forward = new Movement(aAmount => gameObject.transform.Translate(Vector3.forward*aAmount), () => ForwardDampenRate);
-            } else {
+        public void Start()
+        {
+            if (LookAtTarget == null)
+            {
+                _Forward = new Movement(aAmount => gameObject.transform.Translate(Vector3.forward * aAmount), () => ForwardDampenRate);
+            }
+            else
+            {
                 _Forward = new Movement(aAmount => gameObject.GetComponent<UnityEngine.Camera>().fieldOfView += aAmount, () => ForwardDampenRate);
             }
 
-            _PanX = new Movement(aAmount => gameObject.transform.Translate(Vector3.left*aAmount), () => PanningDampenRate);
-            _PanY = new Movement(aAmount => gameObject.transform.Translate(Vector3.up*aAmount), () => PanningDampenRate);
+            _PanX = new Movement(aAmount => gameObject.transform.Translate(Vector3.left * aAmount), () => PanningDampenRate);
+            _PanY = new Movement(aAmount => gameObject.transform.Translate(Vector3.up * aAmount), () => PanningDampenRate);
 
-            _RotateX = new Movement(aAmount => gameObject.transform.Rotate(Vector3.up*aAmount), () => RotateDampenRate);
-            _RotateY = new Movement(aAmount => gameObject.transform.Rotate(Vector3.left*aAmount), () => RotateDampenRate);
+            _RotateX = new Movement(aAmount => gameObject.transform.Rotate(Vector3.up * aAmount), () => RotateDampenRate);
+            _RotateY = new Movement(aAmount => gameObject.transform.Rotate(Vector3.left * aAmount), () => RotateDampenRate);
 
         }
 
-        public void Update() {
+        public void Update()
+        {
 
             if (!Operational)
                 return;
@@ -145,37 +162,52 @@ namespace Assets.Elenesski.Camera.Utilities {
 
             Vector3 START_POSITION = gameObject.transform.position;
 
-            if (GetInputs.ResetMovement) {
+            if (GetInputs.ResetMovement)
+            {
                 ResetMovement();
-            } else {
+            }
+            else
+            {
 
-                float MAG = (GetInputs.isSlowModifier ? ControlKeyMagnification : 1f)*(GetInputs.isFastModifier ? ShiftKeyMagnification : 1f);
+                float MAG = (GetInputs.isSlowModifier ? ControlKeyMagnification : 1f) * (GetInputs.isFastModifier ? ShiftKeyMagnification : 1f);
 
-                if (GetInputs.isPanLeft) {
-                    _PanX.ChangeVelocity(0.01f*MAG*_Resolution*PanLeftRightSensitivity);
-                } else if (GetInputs.isPanRight) {
-                    _PanX.ChangeVelocity(-0.01f*MAG*_Resolution*PanLeftRightSensitivity);
+                if (GetInputs.isPanLeft)
+                {
+                    _PanX.ChangeVelocity(0.01f * MAG * _Resolution * PanLeftRightSensitivity);
+                }
+                else if (GetInputs.isPanRight)
+                {
+                    _PanX.ChangeVelocity(-0.01f * MAG * _Resolution * PanLeftRightSensitivity);
                 }
 
-                if ( _PanX != null )
+                if (_PanX != null)
                     _PanX.Update();
 
-                if (GetInputs.isMoveForward ) {
-                    _Forward.ChangeVelocity(0.005f*MAG*_Resolution*MovementSpeedMagnification);
-                } else if (GetInputs.isMoveBackward ) {
-                    _Forward.ChangeVelocity(-0.005f*MAG*_Resolution*MovementSpeedMagnification);
+                if (GetInputs.isMoveForward)
+                {
+                    _Forward.ChangeVelocity(0.005f * MAG * _Resolution * MovementSpeedMagnification);
+                }
+                else if (GetInputs.isMoveBackward)
+                {
+                    _Forward.ChangeVelocity(-0.005f * MAG * _Resolution * MovementSpeedMagnification);
                 }
 
-                if (GetInputs.isMoveForwardAlt) {
-                    _Forward.ChangeVelocity(0.005f*MAG*_Resolution*MovementSpeedMagnification*WheelMouseMagnification);
-                } else if (GetInputs.isMoveBackwardAlt) {
-                    _Forward.ChangeVelocity(-0.005f*MAG*_Resolution*MovementSpeedMagnification*WheelMouseMagnification);
+                if (GetInputs.isMoveForwardAlt)
+                {
+                    _Forward.ChangeVelocity(0.005f * MAG * _Resolution * MovementSpeedMagnification * WheelMouseMagnification);
+                }
+                else if (GetInputs.isMoveBackwardAlt)
+                {
+                    _Forward.ChangeVelocity(-0.005f * MAG * _Resolution * MovementSpeedMagnification * WheelMouseMagnification);
                 }
 
-                if (GetInputs.isPanUp) {
-                    _PanY.ChangeVelocity(0.005f*MAG*_Resolution*PanUpDownSensitivity);
-                } else if (GetInputs.isPanDown) {
-                    _PanY.ChangeVelocity(-0.005f*MAG*_Resolution*PanUpDownSensitivity);
+                if (GetInputs.isPanUp)
+                {
+                    _PanY.ChangeVelocity(0.005f * MAG * _Resolution * PanUpDownSensitivity);
+                }
+                else if (GetInputs.isPanDown)
+                {
+                    _PanY.ChangeVelocity(-0.005f * MAG * _Resolution * PanUpDownSensitivity);
                 }
 
                 bool FORWARD_LOCK = GetInputs.isLockForwardMovement && ForwardMovementLockEnabled;
@@ -184,13 +216,14 @@ namespace Assets.Elenesski.Camera.Utilities {
                 _PanY.Update();
 
                 // Pan
-                if (GetInputs.isRotateAction) {
+                if (GetInputs.isRotateAction)
+                {
 
-                    float X = (Input.mousePosition.x - GetInputs.RotateActionStart.x)/Screen.width*MouseRotationSensitivity;
-                    float Y = (Input.mousePosition.y - GetInputs.RotateActionStart.y)/Screen.height*MouseRotationSensitivity;
+                    float X = (Input.mousePosition.x - GetInputs.RotateActionStart.x) / Screen.width * MouseRotationSensitivity;
+                    float Y = (Input.mousePosition.y - GetInputs.RotateActionStart.y) / Screen.height * MouseRotationSensitivity;
 
-                    _RotateX.SetVelocity(X*MAG*RotationMagnification*_Resolution);
-                    _RotateY.SetVelocity(Y*MAG*RotationMagnification*_Resolution);
+                    _RotateX.SetVelocity(X * MAG * RotationMagnification * _Resolution);
+                    _RotateY.SetVelocity(Y * MAG * RotationMagnification * _Resolution);
 
                 }
 
@@ -200,12 +233,16 @@ namespace Assets.Elenesski.Camera.Utilities {
 
 
             // Lock at object
-            if (LookAtTarget != null ) {
+            if (LookAtTarget != null)
+            {
                 transform.LookAt(LookAtTarget.transform);
-                if (gameObject.GetComponent<UnityEngine.Camera>().fieldOfView < MinimumZoom) {
+                if (gameObject.GetComponent<UnityEngine.Camera>().fieldOfView < MinimumZoom)
+                {
                     ResetMovement();
                     gameObject.GetComponent<UnityEngine.Camera>().fieldOfView = MinimumZoom;
-                } else if (gameObject.GetComponent<UnityEngine.Camera>().fieldOfView > MaximumZoom) {
+                }
+                else if (gameObject.GetComponent<UnityEngine.Camera>().fieldOfView > MaximumZoom)
+                {
                     ResetMovement();
                     gameObject.GetComponent<UnityEngine.Camera>().fieldOfView = MaximumZoom;
                 }
@@ -233,7 +270,8 @@ namespace Assets.Elenesski.Camera.Utilities {
             transform.position = END_POSITION;
 
             // Level Camera
-            if (LevelCamera) {
+            if (LevelCamera)
+            {
                 // Fix 1.2
                 // When leveling the camera you want to make sure you don't look straight up or straight down, otherwise the camera rolls wildly.
                 // This code prevents this rolling from occurring.
@@ -241,11 +279,14 @@ namespace Assets.Elenesski.Camera.Utilities {
                 if (ROT.x > 180)
                     ROT.x -= 360;
 
-                if (ROT.x > (90-LevelCameraAngleThreshold)) {
-                    ROT.x = (90-LevelCameraAngleThreshold);
+                if (ROT.x > (90 - LevelCameraAngleThreshold))
+                {
+                    ROT.x = (90 - LevelCameraAngleThreshold);
                     gameObject.transform.rotation = Quaternion.Euler(ROT);
-                } else if (ROT.x < (-90+LevelCameraAngleThreshold)) {
-                    ROT.x = -90+LevelCameraAngleThreshold;
+                }
+                else if (ROT.x < (-90 + LevelCameraAngleThreshold))
+                {
+                    ROT.x = -90 + LevelCameraAngleThreshold;
                     gameObject.transform.rotation = Quaternion.Euler(ROT);
 
                 }
@@ -255,7 +296,8 @@ namespace Assets.Elenesski.Camera.Utilities {
 
         }
 
-        public void ResetMovement() {
+        public void ResetMovement()
+        {
             _PanX.SetVelocity(0);
             _PanY.SetVelocity(0);
             _Forward.SetVelocity(0);
@@ -269,23 +311,28 @@ namespace Assets.Elenesski.Camera.Utilities {
             _RotateY.Update();
         }
 
-        public void OnCollisionEnter(Collision collision) {
+        public void OnCollisionEnter(Collision collision)
+        {
             ResetMovement();
         }
 
-        public void PanY( float aMagnitude ) {
-            _PanY.ChangeVelocity(0.005f*aMagnitude*_Resolution*PanUpDownSensitivity);
+        public void PanY(float aMagnitude)
+        {
+            _PanY.ChangeVelocity(0.005f * aMagnitude * _Resolution * PanUpDownSensitivity);
         }
 
-        public void PanX(float aMagnitude) {
-            _PanX.ChangeVelocity(-0.01f*aMagnitude*_Resolution*PanLeftRightSensitivity);
+        public void PanX(float aMagnitude)
+        {
+            _PanX.ChangeVelocity(-0.01f * aMagnitude * _Resolution * PanLeftRightSensitivity);
         }
 
-        public void ForwardBack( float aMagnitude ) {
-            _Forward.ChangeVelocity(-0.005f*aMagnitude*_Resolution*MovementSpeedMagnification);
+        public void ForwardBack(float aMagnitude)
+        {
+            _Forward.ChangeVelocity(-0.005f * aMagnitude * _Resolution * MovementSpeedMagnification);
         }
 
-        public void LevelTheCamera() {
+        public void LevelTheCamera()
+        {
             transform.rotation = Quaternion.LookRotation(transform.forward.normalized, Vector3.up);
         }
 
